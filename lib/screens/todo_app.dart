@@ -19,37 +19,50 @@ class _TodoAppState extends State<TodoApp> {
     TodoItem(title: "Finish homework", isCompleted: true),
   ];
 
-  List<TodoItem> deletedList = []; // 삭제된 할일을 저장하는 리스트
+  List<TodoItem> deletedList = []; // 삭제된 할일 리스트
 
-  // 할일 완료 상태를 변경하는 함수
-  void _toggleCompletion(TodoItem todo) {
+  // 오른쪽 스와이프로 Todo -> Completed 이동
+  void _completeTodo(TodoItem todo) {
     setState(() {
-      if (completedList.contains(todo)) {
-        // 완료된 할일이 스와이프되면 삭제 그룹으로 이동
-        completedList.remove(todo);
-        deletedList.add(todo);
-      } else if (todo.isCompleted) {
-        // 완료 상태에서 미완료로 변경
-        todo.isCompleted = false;
-        completedList.remove(todo);
-        todoList.add(todo);
-      } else {
-        // 할일을 완료로 변경
-        todo.isCompleted = true;
-        todoList.remove(todo);
-        completedList.add(todo);
-      }
+      todoList.remove(todo);
+      todo.isCompleted = true;
+      completedList.add(todo);
     });
   }
 
-  // Deleted 그룹에서 할일을 영구적으로 삭제하는 함수
+  // 오른쪽 스와이프로 Completed -> Deleted 이동
+  void _deleteTodoFromCompleted(TodoItem todo) {
+    setState(() {
+      completedList.remove(todo);
+      deletedList.add(todo);
+    });
+  }
+
+  // 오른쪽 스와이프로 Deleted에서 영구 삭제
   void _deleteTodoForever(TodoItem todo) {
     setState(() {
       deletedList.remove(todo);
     });
   }
 
-  // 할일 추가 함수 (다이얼로그 사용)
+  // 왼쪽 스와이프로 Completed -> Todo 이동 (캔슬)
+  void _cancelCompleted(TodoItem todo) {
+    setState(() {
+      completedList.remove(todo);
+      todo.isCompleted = false;
+      todoList.add(todo);
+    });
+  }
+
+  // 왼쪽 스와이프로 Deleted -> Completed 복구
+  void _restoreDeleted(TodoItem todo) {
+    setState(() {
+      deletedList.remove(todo);
+      completedList.add(todo);
+    });
+  }
+
+  // 할일 추가 함수
   void _addTodo() {
     TextEditingController taskController = TextEditingController();
 
@@ -94,22 +107,26 @@ class _TodoAppState extends State<TodoApp> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Todo 그룹
             TodoList(
               title: "To-Do",
               todos: todoList,
-              onToggleCompletion: _toggleCompletion,
+              onRightSwipe: _completeTodo, // 오른쪽 스와이프 시 Completed로
             ),
+            // Completed 그룹
             TodoList(
               title: "Completed",
               todos: completedList,
-              onToggleCompletion: _toggleCompletion,
+              onRightSwipe: _deleteTodoFromCompleted, // 오른쪽 스와이프 시 Deleted로
+              onLeftSwipe: _cancelCompleted, // 왼쪽 스와이프 시 Todo로
             ),
+            // Deleted 그룹
             TodoList(
-              title: "Deleted", // 삭제된 항목을 위한 리스트
+              title: "Deleted",
               todos: deletedList,
-              onToggleCompletion:
-                  _deleteTodoForever, // 삭제된 항목은 다시 스와이프 시 완전히 삭제
-              isDeleted: true, // 흐리게 표시하기 위해 전달
+              onRightSwipe: _deleteTodoForever, // 오른쪽 스와이프 시 영구 삭제
+              onLeftSwipe: _restoreDeleted, // 왼쪽 스와이프 시 Completed로 복구
+              isDeleted: true,
             ),
           ],
         ),
