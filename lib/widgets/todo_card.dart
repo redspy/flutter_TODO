@@ -14,8 +14,9 @@ class TodoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      color: isDeleted ? Colors.grey[300] : Colors.white, // 삭제된 항목 흐리게
+      // 좌우 10픽셀의 마진, 세로 간격을 5픽셀로 설정
+//      margin: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+      color: isDeleted ? Colors.grey[300] : Colors.white, // 삭제된 항목은 흐리게
       child: ListTile(
         title: Text(
           todo.title,
