@@ -1,6 +1,5 @@
 // screens/todo_app.dart
 import 'package:flutter/material.dart';
-
 import 'package:flutter_todo_app/models/todo_item.dart';
 import 'package:flutter_todo_app/widgets/todo_list.dart';
 
@@ -20,18 +19,33 @@ class _TodoAppState extends State<TodoApp> {
     TodoItem(title: "Finish homework", isCompleted: true),
   ];
 
+  List<TodoItem> deletedList = []; // 삭제된 할일을 저장하는 리스트
+
   // 할일 완료 상태를 변경하는 함수
   void _toggleCompletion(TodoItem todo) {
     setState(() {
-      if (todo.isCompleted) {
+      if (completedList.contains(todo)) {
+        // 완료된 할일이 스와이프되면 삭제 그룹으로 이동
+        completedList.remove(todo);
+        deletedList.add(todo);
+      } else if (todo.isCompleted) {
+        // 완료 상태에서 미완료로 변경
         todo.isCompleted = false;
         completedList.remove(todo);
         todoList.add(todo);
       } else {
+        // 할일을 완료로 변경
         todo.isCompleted = true;
         todoList.remove(todo);
         completedList.add(todo);
       }
+    });
+  }
+
+  // Deleted 그룹에서 할일을 영구적으로 삭제하는 함수
+  void _deleteTodoForever(TodoItem todo) {
+    setState(() {
+      deletedList.remove(todo);
     });
   }
 
@@ -89,6 +103,13 @@ class _TodoAppState extends State<TodoApp> {
               title: "Completed",
               todos: completedList,
               onToggleCompletion: _toggleCompletion,
+            ),
+            TodoList(
+              title: "Deleted", // 삭제된 항목을 위한 리스트
+              todos: deletedList,
+              onToggleCompletion:
+                  _deleteTodoForever, // 삭제된 항목은 다시 스와이프 시 완전히 삭제
+              isDeleted: true, // 흐리게 표시하기 위해 전달
             ),
           ],
         ),
