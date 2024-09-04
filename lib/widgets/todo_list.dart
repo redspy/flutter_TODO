@@ -10,6 +10,7 @@ class TodoList extends StatelessWidget {
   final Function(TodoItem) onRightSwipe;
   final Function(TodoItem)? onLeftSwipe;
   final bool isDeleted;
+  final bool disableLeftSwipe; // 왼쪽 스와이프 비활성화 여부
 
   TodoList({
     required this.title,
@@ -18,6 +19,7 @@ class TodoList extends StatelessWidget {
     required this.onRightSwipe,
     this.onLeftSwipe,
     this.isDeleted = false,
+    this.disableLeftSwipe = false, // 기본값은 왼쪽 스와이프 허용
   });
 
   @override
@@ -41,7 +43,10 @@ class TodoList extends StatelessWidget {
           children: List.generate(todos.length, (index) {
             final todo = todos[index];
             return Dismissible(
-              key: ValueKey(todo.title), // 고유 키 부여
+              key: ValueKey(todo.title),
+              direction: disableLeftSwipe
+                  ? DismissDirection.startToEnd
+                  : DismissDirection.horizontal, // 왼쪽 스와이프 비활성화 여부
               background: Container(
                 color: Colors.green,
                 alignment: Alignment.centerLeft,
@@ -68,7 +73,7 @@ class TodoList extends StatelessWidget {
                 }
               },
               child: ListTile(
-                key: ValueKey(todo), // ReorderableListView에서 사용하는 키
+                key: ValueKey(todo),
                 title: TodoCard(todo: todo, isDeleted: isDeleted),
               ),
             );
