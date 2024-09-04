@@ -62,6 +62,17 @@ class _TodoAppState extends State<TodoApp> {
     });
   }
 
+  // Todo 리스트에서 순서를 바꾸는 함수
+  void _reorderTodos(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final TodoItem item = todoList.removeAt(oldIndex);
+      todoList.insert(newIndex, item);
+    });
+  }
+
   // 할일 추가 함수
   void _addTodo() {
     TextEditingController taskController = TextEditingController();
@@ -107,16 +118,18 @@ class _TodoAppState extends State<TodoApp> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Todo 그룹
+            // Todo 그룹 (드래그 앤 드롭 기능 포함)
             TodoList(
               title: "To-Do",
               todos: todoList,
+              onReorder: _reorderTodos, // 순서를 바꾸는 콜백
               onRightSwipe: _completeTodo, // 오른쪽 스와이프 시 Completed로
             ),
             // Completed 그룹
             TodoList(
               title: "Completed",
               todos: completedList,
+              onReorder: (oldIndex, newIndex) {}, // 순서 변경 없음
               onRightSwipe: _deleteTodoFromCompleted, // 오른쪽 스와이프 시 Deleted로
               onLeftSwipe: _cancelCompleted, // 왼쪽 스와이프 시 Todo로
             ),
@@ -124,6 +137,7 @@ class _TodoAppState extends State<TodoApp> {
             TodoList(
               title: "Deleted",
               todos: deletedList,
+              onReorder: (oldIndex, newIndex) {}, // 순서 변경 없음
               onRightSwipe: _deleteTodoForever, // 오른쪽 스와이프 시 영구 삭제
               onLeftSwipe: _restoreDeleted, // 왼쪽 스와이프 시 Completed로 복구
               isDeleted: true,
