@@ -1,5 +1,6 @@
-// screens/todo_app.dart
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'package:flutter_todo_app/models/todo_item.dart';
 import 'package:flutter_todo_app/widgets/todo_list.dart';
 
@@ -9,33 +10,76 @@ class TodoApp extends StatefulWidget {
 }
 
 class _TodoAppState extends State<TodoApp> {
-  List<TodoItem> todoList = [
-    TodoItem(title: "Go to gym"),
-    TodoItem(title: "Buy groceries"),
-    TodoItem(title: "Call mom"),
-  ];
+  List<TodoItem> todoList = [];
+  List<TodoItem> completedList = [];
+  List<TodoItem> deletedList = [];
 
-  List<TodoItem> completedList = [
-    TodoItem(title: "Finish homework", isCompleted: true),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadTodoData(); // 앱이 시작될 때 저장된 데이터 불러오기
+  }
 
-  List<TodoItem> deletedList = []; // 삭제된 할일 리스트
+  // 데이터를 로드하는 함수
+  void _loadTodoData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      // Todo 리스트 불러오기 (null-safe 처리)
+      List<String> savedTodos = prefs.getStringList('todoList') ?? [];
+      todoList = savedTodos
+          .map((todo) => json.decode(todo))
+          .map((map) => TodoItem.fromMap(map ?? {})) // null-safe 처리
+          .toList();
+
+      // Completed 리스트 불러오기 (null-safe 처리)
+      List<String> savedCompleted = prefs.getStringList('completedList') ?? [];
+      completedList = savedCompleted
+          .map((todo) => json.decode(todo))
+          .map((map) => TodoItem.fromMap(map ?? {})) // null-safe 처리
+          .toList();
+
+      // Deleted 리스트 불러오기 (null-safe 처리)
+      List<String> savedDeleted = prefs.getStringList('deletedList') ?? [];
+      deletedList = savedDeleted
+          .map((todo) => json.decode(todo))
+          .map((map) => TodoItem.fromMap(map ?? {})) // null-safe 처리
+          .toList();
+    });
+  }
+
+  // 데이터를 저장하는 함수
+  void _saveTodoData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Todo, Completed, Deleted 리스트 저장
+    prefs.setStringList(
+        'todoList', todoList.map((todo) => json.encode(todo.toMap())).toList());
+    prefs.setStringList('completedList',
+        completedList.map((todo) => json.encode(todo.toMap())).toList());
+    prefs.setStringList('deletedList',
+        deletedList.map((todo) => json.encode(todo.toMap())).toList());
+  }
 
   // 오른쪽 스와이프로 Todo -> Completed 이동
   void _completeTodo(TodoItem todo) {
     setState(() {
       todoList.remove(todo);
       todo.isCompleted = true;
+      todo.lastUpdated = DateTime.now(); // 상태 변경 시간 기록
       completedList.add(todo);
     });
+    _saveTodoData(); // 데이터 저장
   }
 
   // 오른쪽 스와이프로 Completed -> Deleted 이동
   void _deleteTodoFromCompleted(TodoItem todo) {
     setState(() {
       completedList.remove(todo);
+      todo.lastUpdated = DateTime.now(); // 상태 변경 시간 기록
       deletedList.add(todo);
     });
+    _saveTodoData(); // 데이터 저장
   }
 
   // 오른쪽 스와이프로 Deleted에서 영구 삭제
@@ -43,6 +87,7 @@ class _TodoAppState extends State<TodoApp> {
     setState(() {
       deletedList.remove(todo);
     });
+    _saveTodoData(); // 데이터 저장
   }
 
   // 왼쪽 스와이프로 Completed -> Todo 이동 (캔슬)
@@ -50,16 +95,20 @@ class _TodoAppState extends State<TodoApp> {
     setState(() {
       completedList.remove(todo);
       todo.isCompleted = false;
+      todo.lastUpdated = DateTime.now(); // 상태 변경 시간 기록
       todoList.add(todo);
     });
+    _saveTodoData(); // 데이터 저장
   }
 
   // 왼쪽 스와이프로 Deleted -> Completed 복구
   void _restoreDeleted(TodoItem todo) {
     setState(() {
       deletedList.remove(todo);
+      todo.lastUpdated = DateTime.now(); // 상태 변경 시간 기록
       completedList.add(todo);
     });
+    _saveTodoData(); // 데이터 저장
   }
 
   // Todo 리스트에서 순서를 바꾸는 함수
@@ -71,6 +120,7 @@ class _TodoAppState extends State<TodoApp> {
       final TodoItem item = todoList.removeAt(oldIndex);
       todoList.insert(newIndex, item);
     });
+    _saveTodoData(); // 데이터 저장
   }
 
   // 할일 추가 함수
@@ -94,6 +144,7 @@ class _TodoAppState extends State<TodoApp> {
                 setState(() {
                   todoList.add(TodoItem(title: taskController.text));
                 });
+                _saveTodoData(); // 데이터 저장
                 Navigator.of(context).pop();
               },
             ),
@@ -118,6 +169,7 @@ class _TodoAppState extends State<TodoApp> {
         deletedList.clear(); // Deleted 그룹의 모든 항목을 삭제
       }
     });
+    _saveTodoData(); // 데이터 저장
   }
 
   @override
