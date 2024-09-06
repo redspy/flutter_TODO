@@ -85,6 +85,7 @@ class _TodoAppState extends State<TodoApp> {
           content: TextField(
             controller: taskController,
             decoration: InputDecoration(hintText: "Enter task name"),
+            autofocus: true, // 입력창에 바로 커서가 가도록 설정
           ),
           actions: <Widget>[
             ElevatedButton(

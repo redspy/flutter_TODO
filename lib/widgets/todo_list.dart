@@ -64,7 +64,7 @@ class TodoList extends StatelessWidget {
           width: double.infinity, // 가로 방향으로 화면을 꽉 채움
           color: Colors.grey[300], // 배경색을 회색으로 설정
           padding:
-              EdgeInsets.symmetric(vertical: 5, horizontal: 10), // 세로 여백 줄임
+              EdgeInsets.symmetric(vertical: 0, horizontal: 10), // 세로 여백 줄임
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
