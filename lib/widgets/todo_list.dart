@@ -59,12 +59,11 @@ class TodoList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 그룹명 영역에 회색 배경 적용, 세로 여백을 줄이고 가로는 꽉 채움
+        // 그룹명 영역에 회색 배경 적용, 세로 여백을 0으로 설정하고 가로는 꽉 채움
         Container(
           width: double.infinity, // 가로 방향으로 화면을 꽉 채움
           color: Colors.grey[300], // 배경색을 회색으로 설정
-          padding:
-              EdgeInsets.symmetric(vertical: 0, horizontal: 10), // 세로 여백 줄임
+          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 10), // 세로 여백 0
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
