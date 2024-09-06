@@ -11,7 +11,8 @@ class TodoList extends StatelessWidget {
   final Function(TodoItem) onRightSwipe;
   final Function(TodoItem)? onLeftSwipe;
   final bool isDeleted;
-  final bool disableLeftSwipe; // 왼쪽 스와이프 비활성화 여부
+  final bool disableLeftSwipe;
+  final VoidCallback onDeletePressed;
 
   TodoList({
     required this.title,
@@ -21,7 +22,37 @@ class TodoList extends StatelessWidget {
     this.onLeftSwipe,
     this.isDeleted = false,
     this.disableLeftSwipe = false,
+    required this.onDeletePressed,
   });
+
+  // 삭제 확인 다이얼로그 생성
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Group'),
+          content: Text(
+              'Are you sure you want to delete all items in the $title group?'),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+            ),
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                onDeletePressed(); // 그룹 삭제 실행
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +65,23 @@ class TodoList extends StatelessWidget {
           color: Colors.grey[300], // 배경색을 회색으로 설정
           padding:
               EdgeInsets.symmetric(vertical: 5, horizontal: 10), // 세로 여백 줄임
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold, // 그룹명을 더 진하게
-              color: Colors.black87, // 좀 더 진한 색으로 설정
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold, // 그룹명을 더 진하게
+                  color: Colors.black87, // 좀 더 진한 색으로 설정
+                ),
+              ),
+              // 휴지통 아이콘 버튼 추가, 크기 줄임
+              IconButton(
+                icon: Icon(Icons.delete, color: Colors.red, size: 20), // 크기 줄임
+                onPressed: () => _showDeleteDialog(context), // 다이얼로그 호출
+              ),
+            ],
           ),
         ),
         ReorderableListView(

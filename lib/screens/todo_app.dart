@@ -1,7 +1,5 @@
 // screens/todo_app.dart
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'package:flutter_todo_app/models/todo_item.dart';
 import 'package:flutter_todo_app/widgets/todo_list.dart';
 
@@ -11,53 +9,17 @@ class TodoApp extends StatefulWidget {
 }
 
 class _TodoAppState extends State<TodoApp> {
-  List<TodoItem> todoList = [];
-  List<TodoItem> completedList = [];
-  List<TodoItem> deletedList = [];
+  List<TodoItem> todoList = [
+    TodoItem(title: "Go to gym"),
+    TodoItem(title: "Buy groceries"),
+    TodoItem(title: "Call mom"),
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    _loadTodoData(); // 앱 시작 시 저장된 데이터를 불러옴
-  }
+  List<TodoItem> completedList = [
+    TodoItem(title: "Finish homework", isCompleted: true),
+  ];
 
-  // 데이터를 로드하는 함수
-  void _loadTodoData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    setState(() {
-      // Todo 리스트 불러오기
-      List<String> savedTodos = prefs.getStringList('todoList') ?? [];
-      todoList = savedTodos
-          .map((todo) => TodoItem.fromMap(json.decode(todo)))
-          .toList();
-
-      // Completed 리스트 불러오기
-      List<String> savedCompleted = prefs.getStringList('completedList') ?? [];
-      completedList = savedCompleted
-          .map((todo) => TodoItem.fromMap(json.decode(todo)))
-          .toList();
-
-      // Deleted 리스트 불러오기
-      List<String> savedDeleted = prefs.getStringList('deletedList') ?? [];
-      deletedList = savedDeleted
-          .map((todo) => TodoItem.fromMap(json.decode(todo)))
-          .toList();
-    });
-  }
-
-  // 데이터를 저장하는 함수
-  void _saveTodoData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    // Todo, Completed, Deleted 리스트 저장
-    prefs.setStringList(
-        'todoList', todoList.map((todo) => json.encode(todo.toMap())).toList());
-    prefs.setStringList('completedList',
-        completedList.map((todo) => json.encode(todo.toMap())).toList());
-    prefs.setStringList('deletedList',
-        deletedList.map((todo) => json.encode(todo.toMap())).toList());
-  }
+  List<TodoItem> deletedList = []; // 삭제된 할일 리스트
 
   // 오른쪽 스와이프로 Todo -> Completed 이동
   void _completeTodo(TodoItem todo) {
@@ -66,7 +28,6 @@ class _TodoAppState extends State<TodoApp> {
       todo.isCompleted = true;
       completedList.add(todo);
     });
-    _saveTodoData(); // 데이터 저장
   }
 
   // 오른쪽 스와이프로 Completed -> Deleted 이동
@@ -75,7 +36,6 @@ class _TodoAppState extends State<TodoApp> {
       completedList.remove(todo);
       deletedList.add(todo);
     });
-    _saveTodoData(); // 데이터 저장
   }
 
   // 오른쪽 스와이프로 Deleted에서 영구 삭제
@@ -83,7 +43,6 @@ class _TodoAppState extends State<TodoApp> {
     setState(() {
       deletedList.remove(todo);
     });
-    _saveTodoData(); // 데이터 저장
   }
 
   // 왼쪽 스와이프로 Completed -> Todo 이동 (캔슬)
@@ -93,7 +52,6 @@ class _TodoAppState extends State<TodoApp> {
       todo.isCompleted = false;
       todoList.add(todo);
     });
-    _saveTodoData(); // 데이터 저장
   }
 
   // 왼쪽 스와이프로 Deleted -> Completed 복구
@@ -102,7 +60,6 @@ class _TodoAppState extends State<TodoApp> {
       deletedList.remove(todo);
       completedList.add(todo);
     });
-    _saveTodoData(); // 데이터 저장
   }
 
   // Todo 리스트에서 순서를 바꾸는 함수
@@ -114,7 +71,6 @@ class _TodoAppState extends State<TodoApp> {
       final TodoItem item = todoList.removeAt(oldIndex);
       todoList.insert(newIndex, item);
     });
-    _saveTodoData(); // 데이터 저장
   }
 
   // 할일 추가 함수
@@ -137,7 +93,6 @@ class _TodoAppState extends State<TodoApp> {
                 setState(() {
                   todoList.add(TodoItem(title: taskController.text));
                 });
-                _saveTodoData(); // 데이터 저장
                 Navigator.of(context).pop();
               },
             ),
@@ -153,6 +108,17 @@ class _TodoAppState extends State<TodoApp> {
     );
   }
 
+  // 휴지통 버튼을 눌렀을 때 그룹 전체 삭제
+  void _deleteGroupItems(String group) {
+    setState(() {
+      if (group == "Completed") {
+        completedList.clear(); // Completed 그룹의 모든 항목을 삭제
+      } else if (group == "Deleted") {
+        deletedList.clear(); // Deleted 그룹의 모든 항목을 삭제
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -163,13 +129,14 @@ class _TodoAppState extends State<TodoApp> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Todo 그룹 (드래그 앤 드롭 기능 포함)
+            // Todo 그룹
             TodoList(
               title: "To-Do",
               todos: todoList,
               onReorder: _reorderTodos,
               onRightSwipe: _completeTodo,
-              disableLeftSwipe: true, // 왼쪽 스와이프 비활성화
+              disableLeftSwipe: true,
+              onDeletePressed: () {}, // To-Do 그룹에서는 삭제 기능 없음
             ),
             // Completed 그룹
             TodoList(
@@ -178,6 +145,8 @@ class _TodoAppState extends State<TodoApp> {
               onReorder: (oldIndex, newIndex) {},
               onRightSwipe: _deleteTodoFromCompleted,
               onLeftSwipe: _cancelCompleted,
+              onDeletePressed: () =>
+                  _deleteGroupItems("Completed"), // Completed 그룹 삭제
             ),
             // Deleted 그룹
             TodoList(
@@ -187,6 +156,8 @@ class _TodoAppState extends State<TodoApp> {
               onRightSwipe: _deleteTodoForever,
               onLeftSwipe: _restoreDeleted,
               isDeleted: true,
+              onDeletePressed: () =>
+                  _deleteGroupItems("Deleted"), // Deleted 그룹 삭제
             ),
           ],
         ),
