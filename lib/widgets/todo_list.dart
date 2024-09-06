@@ -1,5 +1,6 @@
 // widgets/todo_list.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_todo_app/models/todo_item.dart';
 import 'package:flutter_todo_app/widgets/todo_card.dart';
 
@@ -19,7 +20,7 @@ class TodoList extends StatelessWidget {
     required this.onRightSwipe,
     this.onLeftSwipe,
     this.isDeleted = false,
-    this.disableLeftSwipe = false, // 기본값은 왼쪽 스와이프 허용
+    this.disableLeftSwipe = false,
   });
 
   @override
@@ -27,11 +28,19 @@ class TodoList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: EdgeInsets.all(10),
+        // 그룹명 영역에 회색 배경 적용, 세로 여백을 줄이고 가로는 꽉 채움
+        Container(
+          width: double.infinity, // 가로 방향으로 화면을 꽉 채움
+          color: Colors.grey[300], // 배경색을 회색으로 설정
+          padding:
+              EdgeInsets.symmetric(vertical: 5, horizontal: 10), // 세로 여백 줄임
           child: Text(
             title,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold, // 그룹명을 더 진하게
+              color: Colors.black87, // 좀 더 진한 색으로 설정
+            ),
           ),
         ),
         ReorderableListView(
@@ -46,7 +55,7 @@ class TodoList extends StatelessWidget {
               key: ValueKey(todo.title),
               direction: disableLeftSwipe
                   ? DismissDirection.startToEnd
-                  : DismissDirection.horizontal, // 왼쪽 스와이프 비활성화 여부
+                  : DismissDirection.horizontal,
               background: Container(
                 color: Colors.green,
                 alignment: Alignment.centerLeft,
@@ -63,12 +72,13 @@ class TodoList extends StatelessWidget {
                 ),
               ),
               onDismissed: (direction) {
+                HapticFeedback.heavyImpact();
+                HapticFeedback.vibrate(); // 강한 진동과 더 긴 진동
+
                 if (direction == DismissDirection.endToStart &&
                     onLeftSwipe != null) {
-                  // 왼쪽 스와이프
                   onLeftSwipe!(todo);
                 } else if (direction == DismissDirection.startToEnd) {
-                  // 오른쪽 스와이프
                   onRightSwipe(todo);
                 }
               },

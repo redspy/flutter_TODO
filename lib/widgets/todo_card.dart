@@ -14,8 +14,12 @@ class TodoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // 좌우 10픽셀의 마진, 세로 간격을 5픽셀로 설정
-//      margin: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+      // 좌우 0픽셀, 세로 간격 0픽셀 설정
+      margin: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+      // 모서리 둥글기 값을 0으로 설정
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(0), // 둥글기 0
+      ),
       color: isDeleted ? Colors.grey[300] : Colors.white, // 삭제된 항목은 흐리게
       child: ListTile(
         title: Text(
