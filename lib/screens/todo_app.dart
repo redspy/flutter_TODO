@@ -131,14 +131,20 @@ class _TodoAppState extends State<TodoApp> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Add New Task"),
+          backgroundColor: Colors.grey[800], // 다크 테마 배경
+          title: Text(
+            "Add New Task",
+            style: TextStyle(color: Colors.white), // 다크 테마 글씨
+          ),
           content: TextField(
             controller: taskController,
             decoration: InputDecoration(hintText: "Enter task name"),
+            style: TextStyle(color: Colors.white), // 다크 테마 글씨
             autofocus: true, // 입력창에 바로 커서가 가도록 설정
           ),
           actions: <Widget>[
             ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               child: Text("Add"),
               onPressed: () {
                 setState(() {
@@ -149,6 +155,7 @@ class _TodoAppState extends State<TodoApp> {
               },
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               child: Text("Cancel"),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -176,47 +183,58 @@ class _TodoAppState extends State<TodoApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Todo List'),
+        title: Text(
+          '할 일', // 타이틀 변경
+          style: TextStyle(
+            color: Colors.white, // 흰색 글씨
+            fontWeight: FontWeight.bold, // 굵은 글씨
+          ),
+        ),
+        backgroundColor: Colors.grey[900], // 어두운 AppBar
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Todo 그룹
-            TodoList(
-              title: "To-Do",
-              todos: todoList,
-              onReorder: _reorderTodos,
-              onRightSwipe: _completeTodo,
-              disableLeftSwipe: true,
-              onDeletePressed: () {}, // To-Do 그룹에서는 삭제 기능 없음
-            ),
-            // Completed 그룹
-            TodoList(
-              title: "Completed",
-              todos: completedList,
-              onReorder: (oldIndex, newIndex) {},
-              onRightSwipe: _deleteTodoFromCompleted,
-              onLeftSwipe: _cancelCompleted,
-              onDeletePressed: () =>
-                  _deleteGroupItems("Completed"), // Completed 그룹 삭제
-            ),
-            // Deleted 그룹
-            TodoList(
-              title: "Deleted",
-              todos: deletedList,
-              onReorder: (oldIndex, newIndex) {},
-              onRightSwipe: _deleteTodoForever,
-              onLeftSwipe: _restoreDeleted,
-              isDeleted: true,
-              onDeletePressed: () =>
-                  _deleteGroupItems("Deleted"), // Deleted 그룹 삭제
-            ),
-          ],
+      body: Container(
+        color: Colors.grey[850], // 배경을 어두운 회색으로 설정
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Todo 그룹
+              TodoList(
+                title: "To-Do",
+                todos: todoList,
+                onReorder: _reorderTodos,
+                onRightSwipe: _completeTodo,
+                disableLeftSwipe: true,
+                onDeletePressed: () {}, // To-Do 그룹에서는 삭제 기능 없음
+              ),
+              // Completed 그룹
+              TodoList(
+                title: "Completed",
+                todos: completedList,
+                onReorder: (oldIndex, newIndex) {},
+                onRightSwipe: _deleteTodoFromCompleted,
+                onLeftSwipe: _cancelCompleted,
+                onDeletePressed: () =>
+                    _deleteGroupItems("Completed"), // Completed 그룹 삭제
+              ),
+              // Deleted 그룹
+              TodoList(
+                title: "Deleted",
+                todos: deletedList,
+                onReorder: (oldIndex, newIndex) {},
+                onRightSwipe: _deleteTodoForever,
+                onLeftSwipe: _restoreDeleted,
+                isDeleted: true,
+                onDeletePressed: () =>
+                    _deleteGroupItems("Deleted"), // Deleted 그룹 삭제
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addTodo,
+        backgroundColor: Colors.teal, // 약간 밝은 색으로 눈에 띄게 설정
         child: Icon(Icons.add),
       ),
     );
