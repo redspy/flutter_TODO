@@ -77,7 +77,8 @@ class TodoList extends StatelessWidget {
               ),
               // 휴지통 아이콘 버튼 추가, 크기 줄임
               IconButton(
-                icon: Icon(Icons.delete, color: Colors.red, size: 20), // 크기 줄임
+                icon:
+                    Icon(Icons.delete, color: Colors.black, size: 20), // 크기 줄임
                 onPressed: () => _showDeleteDialog(context), // 다이얼로그 호출
               ),
             ],
@@ -103,7 +104,7 @@ class TodoList extends StatelessWidget {
                 child: Icon(Icons.check, color: Colors.white),
               ),
               secondaryBackground: Container(
-                color: isDeleted ? Colors.blue : Colors.red,
+                color: isDeleted ? Colors.blue : Colors.black,
                 alignment: Alignment.centerRight,
                 padding: EdgeInsets.only(right: 20),
                 child: Icon(
